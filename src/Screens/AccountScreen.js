@@ -23,7 +23,9 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useContext, useEffect, useState} from 'react';
-import {auth, db, storage} from '../Firebase/Config';
+import {db, storage} from '../Firebase/Config';
+import auth from '@react-native-firebase/auth';
+import {Firestore} from 'firebase/firestore';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {AuthContext} from '../context/AuthContext';
 import {

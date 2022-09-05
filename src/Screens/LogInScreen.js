@@ -16,9 +16,11 @@ import {TextInput} from 'react-native-paper';
 import SignInScreen from './SignInScreen';
 import HomeScreen from './HomeScreen';
 import {useNavigation} from '@react-navigation/native';
-import {signInWithEmailAndPassword} from 'firebase/auth';
+
 import {AuthContext} from '../context/AuthContext';
-import {auth} from '../Firebase/Config';
+// import {signInWithEmailAndPassword} from 'firebase/auth';
+// import {auth} from '../Firebase/Config';
+import auth from '@react-native-firebase/auth';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
   Box,
@@ -68,11 +70,11 @@ const LogInScreen = () => {
               const credentials = await Keychain.getGenericPassword();
 
               if (credentials) {
-                signInWithEmailAndPassword(
-                  auth,
-                  credentials.username.trim(),
-                  credentials.password,
-                )
+                auth()
+                  .signInWithEmailAndPassword(
+                    credentials.username.trim(),
+                    credentials.password,
+                  )
                   .then(() => {
                     Alert.alert('Bienvenue');
                     authContext.setAuthenticated(true);
@@ -113,197 +115,186 @@ const LogInScreen = () => {
           style={{width: '100%', height: '69%', resizeMode: 'contain'}}
           source={require('../../assets/background.png')}
         >
-          {!isLoggedIn ? (
-            <Formik
-              validationSchema={yup.object().shape({
-                email: yup
-                  .string()
-                  .email('Entrez un mail valide')
-                  .required('Requis')
-                  .trim(),
-                password: yup
-                  .string()
-                  .min(
-                    6,
-                    ({min}) =>
-                      `Le mot de passe doit contenir au moins ${min} caractères`,
-                  )
-                  .required('Requis'),
-              })}
-              initialValues={{
-                email: '',
-                password: '',
-              }}
-              onSubmit={values =>
-                signInWithEmailAndPassword(
-                  auth,
+          <Formik
+            validationSchema={yup.object().shape({
+              email: yup
+                .string()
+                .email('Entrez un mail valide')
+                .required('Requis')
+                .trim(),
+              password: yup
+                .string()
+                .min(
+                  6,
+                  ({min}) =>
+                    `Le mot de passe doit contenir au moins ${min} caractères`,
+                )
+                .required('Requis'),
+            })}
+            initialValues={{
+              email: '',
+              password: '',
+            }}
+            onSubmit={values =>
+              auth()
+                .signInWithEmailAndPassword(
                   values.email.trim(),
                   values.password,
                 )
-                  .then(userCredential => {
-                    // Signed in
-                    const user = userCredential.user;
-                    authContext.setAuthenticated(true);
-                    handleLogin(values.email, values.password);
+                .then(userCredential => {
+                  // Signed in
+                  const user = userCredential.user;
+                  authContext.setAuthenticated(true);
+                  handleLogin(values.email, values.password);
 
-                    // ...
-                  })
-                  .catch(error => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                  })
-              }
-            >
-              {({
-                errors,
-                touched,
-                isValidating,
-                values,
-                handleChange,
-                handleSubmit,
-                setFieldValue,
-                setFieldTouched,
-                handleBlur,
-              }) => {
-                return (
-                  <View style={{flex: 1}}>
-                    <Box w="100%" maxWidth="600px" mt={350}>
-                      <FormControl isInvalid={'email' in errors}>
-                        <Stack mx="4">
-                          <FormControl.Label>Email</FormControl.Label>
+                  // ...
+                })
+                .catch(error => {
+                  const errorCode = error.code;
+                  const errorMessage = error.message;
+                })
+            }
+          >
+            {({
+              errors,
+              touched,
+              isValidating,
+              values,
+              handleChange,
+              handleSubmit,
+              setFieldValue,
+              setFieldTouched,
+              handleBlur,
+            }) => {
+              return (
+                <View style={{flex: 1}}>
+                  <Box w="100%" maxWidth="600px" mt={350}>
+                    <FormControl isInvalid={'email' in errors}>
+                      <Stack mx="4">
+                        <FormControl.Label>Email</FormControl.Label>
 
-                          <Input
-                            outlineColor={'green'}
-                            keyboardType="email"
-                            type="text"
-                            isRequired="true"
-                            _focus={isFocused ? 'green' : 'red'}
-                            variant="underlined"
-                            placeholder="email@gmail.com"
-                            onBlur={() => handleBlur('email')}
-                            value={values.email}
-                            onChangeText={text => {
-                              setFieldTouched('email'),
-                                setFieldValue('email', text);
-                            }}
-                          />
-                          {errors.email && touched.email && (
-                            <FormControl.ErrorMessage
-                              leftIcon={<WarningOutlineIcon size="xs" />}
-                            >
-                              {errors.email}
-                            </FormControl.ErrorMessage>
-                          )}
-                        </Stack>
-                      </FormControl>
-                    </Box>
-
-                    <Box w="100%" maxWidth="300px">
-                      <FormControl isInvalid={'password' in errors}>
-                        <Stack mx="4">
-                          <FormControl.Label>Mot de passe</FormControl.Label>
-                          <Input
-                            type={show ? 'text' : 'password'}
-                            InputRightElement={
-                              <Pressable onPress={() => setShow(!show)}>
-                                <Icon
-                                  as={
-                                    <IonIcons name={show ? 'eye' : 'eye-off'} />
-                                  }
-                                  size={5}
-                                  mr="2"
-                                  color="muted.400"
-                                />
-                              </Pressable>
-                            }
-                            variant="underlined"
-                            placeholder="mot de passe"
-                            onBlur={() => handleBlur('password')}
-                            value={values.password}
-                            onChangeText={text => {
-                              setFieldTouched('password'),
-                                setFieldValue('password', text);
-                            }}
-                          />
-                          {'password' in errors ? (
-                            <FormControl.ErrorMessage>
-                              Le mot de passe doit contenir au minimum 6
-                              caractères
-                            </FormControl.ErrorMessage>
-                          ) : (
-                            <FormControl.HelperText></FormControl.HelperText>
-                          )}
-                        </Stack>
-                      </FormControl>
-                    </Box>
-
-                    <View
-                      style={{
-                        alignItems: 'center',
-                        marginBottom: 20,
-                      }}
-                    >
-                      <TouchableOpacity
-                        style={{
-                          alignSelf: 'center',
-                          width: '60%',
-                          backgroundColor: 'green',
-                          padding: 15,
-                          borderRadius: 5,
-                        }}
-                        onPress={handleSubmit}
-                      >
-                        <Text style={{alignSelf: 'center', color: 'white'}}>
-                          Se connecter
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                    {/* //.........TOUCHID.........// */}
-                    <View
-                      style={{
-                        justifyContent: 'center',
-                        flex: 1,
-                        alignSelf: 'center',
-                      }}
-                    >
-                      <TouchableOpacity>
-                        <Button
-                          title="Authentification digitale"
-                          onPress={touchIdAuth}
+                        <Input
+                          outlineColor={'green'}
+                          keyboardType="email"
+                          type="text"
+                          isRequired="true"
+                          _focus={isFocused ? 'green' : 'red'}
+                          variant="underlined"
+                          placeholder="email@gmail.com"
+                          onBlur={() => handleBlur('email')}
+                          value={values.email}
+                          onChangeText={text => {
+                            setFieldTouched('email'),
+                              setFieldValue('email', text);
+                          }}
                         />
-                      </TouchableOpacity>
-                    </View>
-                    <View style={{alignItems: 'center'}}>
-                      <Text>Pas de compte?</Text>
-                      <TouchableOpacity
-                        style={{
-                          alignSelf: 'center',
-                          width: '40%',
-                          backgroundColor: 'green',
-                          padding: 5,
-                          borderRadius: 5,
-                        }}
-                        onPress={() => navigation.navigate('SignIn')}
-                      >
-                        <Text style={{alignSelf: 'center', color: 'white'}}>
-                          Créer un compte
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
+                        {errors.email && touched.email && (
+                          <FormControl.ErrorMessage
+                            leftIcon={<WarningOutlineIcon size="xs" />}
+                          >
+                            {errors.email}
+                          </FormControl.ErrorMessage>
+                        )}
+                      </Stack>
+                    </FormControl>
+                  </Box>
+
+                  <Box w="100%" maxWidth="300px">
+                    <FormControl isInvalid={'password' in errors}>
+                      <Stack mx="4">
+                        <FormControl.Label>Mot de passe</FormControl.Label>
+                        <Input
+                          type={show ? 'text' : 'password'}
+                          InputRightElement={
+                            <Pressable onPress={() => setShow(!show)}>
+                              <Icon
+                                as={
+                                  <IonIcons name={show ? 'eye' : 'eye-off'} />
+                                }
+                                size={5}
+                                mr="2"
+                                color="muted.400"
+                              />
+                            </Pressable>
+                          }
+                          variant="underlined"
+                          placeholder="mot de passe"
+                          onBlur={() => handleBlur('password')}
+                          value={values.password}
+                          onChangeText={text => {
+                            setFieldTouched('password'),
+                              setFieldValue('password', text);
+                          }}
+                        />
+                        {'password' in errors ? (
+                          <FormControl.ErrorMessage>
+                            Le mot de passe doit contenir au minimum 6
+                            caractères
+                          </FormControl.ErrorMessage>
+                        ) : (
+                          <FormControl.HelperText></FormControl.HelperText>
+                        )}
+                      </Stack>
+                    </FormControl>
+                  </Box>
+
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      marginBottom: 20,
+                    }}
+                  >
+                    <TouchableOpacity
+                      style={{
+                        alignSelf: 'center',
+                        width: '60%',
+                        backgroundColor: 'green',
+                        padding: 15,
+                        borderRadius: 5,
+                      }}
+                      onPress={handleSubmit}
+                    >
+                      <Text style={{alignSelf: 'center', color: 'white'}}>
+                        Se connecter
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                );
-              }}
-            </Formik>
-          ) : (
-            <View>
-              <Text style={styles.welcomeText}>
-                Welcome back! {userDetails.email}
-              </Text>
-              <Text style={styles.logoutBtn} onPress={handleLogout}>
-                Logout
-              </Text>
-            </View>
-          )}
+                  {/* //.........TOUCHID.........// */}
+                  <View
+                    style={{
+                      justifyContent: 'center',
+                      flex: 1,
+                      alignSelf: 'center',
+                    }}
+                  >
+                    <TouchableOpacity>
+                      <Button
+                        title="Authentification digitale"
+                        onPress={touchIdAuth}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{alignItems: 'center'}}>
+                    <Text>Pas de compte?</Text>
+                    <TouchableOpacity
+                      style={{
+                        alignSelf: 'center',
+                        width: '40%',
+                        backgroundColor: 'green',
+                        padding: 5,
+                        borderRadius: 5,
+                      }}
+                      onPress={() => navigation.navigate('SignIn')}
+                    >
+                      <Text style={{alignSelf: 'center', color: 'white'}}>
+                        Créer un compte
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            }}
+          </Formik>
         </ImageBackground>
       </View>
     </KeyboardAwareScrollView>

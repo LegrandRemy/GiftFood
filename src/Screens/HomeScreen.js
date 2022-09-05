@@ -21,10 +21,12 @@ import {
   deleteDoc,
   onSnapshot,
 } from 'firebase/firestore';
-import {auth, db} from '../Firebase/Config';
+import {db} from '../Firebase/Config';
 import {AuthContext} from '../context/AuthContext';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
+import auth from '@react-native-firebase/auth';
+import {Firestore} from 'firebase/firestore';
 
 const HomeScreen = props => {
   const [visible, setVisible] = useState(false);

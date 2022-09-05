@@ -16,7 +16,9 @@ import * as yup from 'yup';
 import {Snackbar, TextInput} from 'react-native-paper';
 import {getAuth, createUserWithEmailAndPassword} from 'firebase/auth';
 import {AuthContext} from '../context/AuthContext';
-import {auth, db} from '../Firebase/Config';
+import {db} from '../Firebase/Config';
+import auth from '@react-native-firebase/auth';
+import {Firestore} from 'firebase/firestore';
 import {useNavigation} from '@react-navigation/native';
 import {collection, doc, setDoc} from 'firebase/firestore';
 import {
@@ -116,11 +118,11 @@ const SignIn = () => {
           verifPassword: '',
         }}
         onSubmit={values =>
-          createUserWithEmailAndPassword(
-            auth,
-            values.email.trim(),
-            values.password,
-          )
+          auth()
+            .createUserWithEmailAndPassword(
+              values.email.trim(),
+              values.password,
+            )
             .then(userCredential => {
               // Signed in
               const user = userCredential.user;
