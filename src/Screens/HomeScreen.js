@@ -41,95 +41,81 @@ const HomeScreen = props => {
   const uid = auth.currentUser.uid;
   const isFocused = useIsFocused();
   const renderItem = ({item}) => (
-    <Card style={styles.Card}>
-      <Image
-        _alt="image de bouffe"
-        source={{
-          uri: item.image,
-        }}
-        style={styles.img}
-      />
-      <Card.Content style={styles.CardContent}>
-        <Paragraph>{item.title}</Paragraph>
-        <Paragraph style={styles.subtitle}>
-          Publiée {dayjs(item.publicationDate.toDate()).fromNow()}
-        </Paragraph>
-        <Title style={styles.subtitle}>
-          DLC : {dayjs(item.DLC.toDate()).format('DD/MM/YYYY')}
-        </Title>
-      </Card.Content>
-      {item.uid == uid ? (
-        <Card.Actions>
-          <View
-            style={{flex: 1, backgroundColor: 'red', alignItems: 'flex-end'}}
-          >
-            <TouchableOpacity
-              style={{
-                width: '100%',
-                backgroundColor: 'green',
-                padding: 5,
-                borderRadius: 5,
-              }}
-              onPress={() => navigation.navigate('modify', {item})}
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate('DetailsScreen', {
+          item: {
+            // Permet de passer les dates formatées a d'autres écrans en passant par la route
+            ...item,
+            DLC: dayjs(item.DLC.toDate()).format('DD/MM/YYYY'),
+            dispo: dayjs(item.dispo.toDate()).format('DD/MM/YYYY'),
+            publicationDate: dayjs(item.publicationDate.toDate()).format(
+              'DD/MM/YYYY',
+            ),
+          },
+        })
+      }
+      style={{width: '50%'}}
+    >
+      <Card style={styles.Card}>
+        <Image
+          _alt="image de bouffe"
+          source={{
+            uri: item.image,
+          }}
+          style={styles.img}
+        />
+        <Card.Content style={styles.CardContent}>
+          <Paragraph>{item.title}</Paragraph>
+          <Paragraph style={styles.subtitle}>
+            Publiée {dayjs(item.publicationDate.toDate()).fromNow()}
+          </Paragraph>
+          <Title style={styles.subtitle}>
+            DLC : {dayjs(item.DLC.toDate()).format('DD/MM/YYYY')}
+          </Title>
+        </Card.Content>
+        {item.uid == uid ? (
+          <Card.Actions>
+            <View
+              style={{flex: 1, backgroundColor: 'red', alignItems: 'flex-end'}}
             >
-              <Text style={{alignSelf: 'center', color: 'white'}}>
-                Modifier
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View
-            style={{flex: 1, backgroundColor: 'red', alignItems: 'flex-end'}}
-          >
-            <TouchableOpacity
-              style={{
-                width: '100%',
-                backgroundColor: 'green',
-                padding: 5,
-                borderRadius: 5,
-              }}
-              onPress={() => deleteDon(item.id)}
+              <TouchableOpacity
+                style={{
+                  width: '100%',
+                  backgroundColor: 'green',
+                  padding: 5,
+                  borderRadius: 5,
+                }}
+                onPress={() => navigation.navigate('modify', {item})}
+              >
+                <Text style={{alignSelf: 'center', color: 'white'}}>
+                  Modifier
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{flex: 1, backgroundColor: 'red', alignItems: 'flex-end'}}
             >
-              <Text style={{alignSelf: 'center', color: 'white'}}>
-                Supprimer
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Card.Actions>
-      ) : (
-        <View style={{flex: 1, alignItems: 'flex-end'}}>
-          <TouchableOpacity
-            style={{
-              width: '50%',
-              backgroundColor: 'green',
-              padding: 5,
-              borderRadius: 5,
-            }}
-            onPress={() =>
-              navigation.navigate('DetailsScreen', {
-                item: {
-                  // Permet de passer les dates formatées a d'autres écrans en passant par la route
-                  ...item,
-                  DLC: dayjs(item.DLC.toDate()).format('DD/MM/YYYY'),
-                  dispo: dayjs(item.dispo.toDate()).format('DD/MM/YYYY'),
-                  publicationDate: dayjs(
-                    item.publicationDate.toDate(),
-                  ).fromNow(),
-                },
-              })
-            }
-          >
-            <Text
-              style={{
-                alignSelf: 'center',
-                color: 'white',
-              }}
-            >
-              Details
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </Card>
+              <TouchableOpacity
+                style={{
+                  width: '100%',
+                  backgroundColor: 'green',
+                  padding: 5,
+                  borderRadius: 5,
+                }}
+                onPress={() => deleteDon(item.id)}
+              >
+                <Text style={{alignSelf: 'center', color: 'white'}}>
+                  Supprimer
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Card.Actions>
+        ) : (
+          <View style={{flex: 1, alignItems: 'flex-end'}}></View>
+        )}
+      </Card>
+    </TouchableOpacity>
   );
   const navigation = useNavigation();
   const authContext = useContext(AuthContext);
