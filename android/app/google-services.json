@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "563390510911",
+    "project_id": "gift-food-3cc16",
+    "storage_bucket": "gift-food-3cc16.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563390510911:android:2b46c9a2d256ed3abb858a",
+        "android_client_info": {
+          "package_name": "com.giftfood"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "563390510911-qm4ukd5h1d1rk4kfuclujgonucv5eg8f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfI2PUle7GZnTleycXxdMNQEHbZpQiQdM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "563390510911-qm4ukd5h1d1rk4kfuclujgonucv5eg8f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
