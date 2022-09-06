@@ -41,6 +41,8 @@ import {
 } from 'native-base';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 dayjs.locale('fr');
 const validationSchema = yup.object().shape({

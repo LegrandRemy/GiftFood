@@ -19,9 +19,10 @@ import IonIcons from 'react-native-vector-icons/Ionicons';
 import {AuthContext} from '../context/AuthContext';
 import {base64, isEmpty} from '@firebase/util';
 import {signOut} from 'firebase/auth';
-import {auth, db} from '../Firebase/Config';
+import {db} from '../Firebase/Config';
 import {doc, getDoc, onSnapshot} from 'firebase/firestore';
 import {Image} from 'react-native';
+import auth from '@react-native-firebase/auth';
 
 const Drawer = createDrawerNavigator();
 
@@ -32,26 +33,24 @@ const DrawerContent = props => {
   const [filePath, setFilePath] = useState({});
   const [data, setData] = useState({});
   const handleLogout = () => {
-    signOut(auth).then(userCredential => {
+    signOut(auth()).then(userCredential => {
       setAuthenticated(false);
     });
   };
   useEffect(() => {
-    const userDocRef = doc(db, 'users', auth.currentUser.uid);
+    const userDocRef = doc(db, 'users', auth().currentUser.uid);
     const toto = onSnapshot(userDocRef, doc => {
       getDoc(userDocRef).then(docSnap => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setData(data);
           setFilePath(filePath);
-          console.log('coucou');
         }
       });
       return () => toto();
     });
   }, []);
 
-  console.log('data', auth.currentUser.photoURL);
   return (
     <DrawerContentScrollView
       contentContainerStyle={{
@@ -65,12 +64,12 @@ const DrawerContent = props => {
             size="xl"
             mb={3}
             source={
-              isEmpty(auth.currentUser.photoURL)
+              isEmpty(auth().currentUser.photoURL)
                 ? require('../../assets/ok.png')
-                : {uri: auth.currentUser.photoURL}
+                : {uri: auth().currentUser.photoURL}
             }
           ></Avatar>
-          <Text>{auth.currentUser.email}</Text>
+          <Text>{auth().currentUser.email}</Text>
         </Box>
         <VStack divider={<Divider />} space="4" flexGrow={1}>
           <VStack space={4}>

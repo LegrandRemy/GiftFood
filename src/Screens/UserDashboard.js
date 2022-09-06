@@ -13,13 +13,28 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useContext, useEffect, useState} from 'react';
-import {auth, db} from '../Firebase/Config';
+import {db} from '../Firebase/Config';
 import {AuthContext} from '../context/AuthContext';
-import {collection, query, where, getDocs} from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+  doc,
+} from 'firebase/firestore';
 import {getAuth, signOut} from 'firebase/auth';
+import auth from '@react-native-firebase/auth';
 
 const UserDashboard = () => {
+  const [visible, setVisible] = useState(false);
   const isFocused = useIsFocused();
+  const deleteDon = id => {
+    const q = doc(db, 'annonces', id);
+    deleteDoc(q).then(deleteAnnonce => {
+      setVisible(true);
+    });
+  };
 
   const renderItem = ({item}) => (
     <>
@@ -106,7 +121,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const q = query(
       collection(db, 'annonces'),
-      where('uid', '==', auth.currentUser.uid),
+      where('uid', '==', auth().currentUser.uid),
     );
 
     getDocs(q)

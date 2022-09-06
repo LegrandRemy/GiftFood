@@ -26,7 +26,7 @@ import {AuthContext} from '../context/AuthContext';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 import auth from '@react-native-firebase/auth';
-import {Firestore} from 'firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 
 const HomeScreen = props => {
   const [visible, setVisible] = useState(false);
@@ -38,7 +38,7 @@ const HomeScreen = props => {
     });
   };
 
-  const uid = auth.currentUser.uid;
+  const uid = auth().currentUser.uid;
   const isFocused = useIsFocused();
   const renderItem = ({item}) => (
     <TouchableOpacity
@@ -123,25 +123,25 @@ const HomeScreen = props => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const annoncesRef = collection(db, 'annonces');
-    const unsubscribe = onSnapshot(
-      annoncesRef,
-      querySnapShot => {
-        const advertsArray = [];
-        querySnapShot.forEach(doc => {
-          advertsArray.push({
-            ...doc.data(),
-            id: doc.id,
+    const subscriber = firestore()
+      .collection('annonces')
+      .onSnapshot(
+        querySnapShot => {
+          const advertsArray = [];
+          querySnapShot.forEach(doc => {
+            advertsArray.push({
+              ...doc.data(),
+              id: doc.id,
+            });
           });
-        });
-        setAnnonces(advertsArray);
-        setLoading(false);
-      },
-      error => {
-        console.log(error.message);
-      },
-    );
-    return () => unsubscribe();
+          setAnnonces(advertsArray);
+          setLoading(false);
+        },
+        error => {
+          console.log(error.message);
+        },
+      );
+    return () => subscriber();
   }, []);
   return (
     !loading && (

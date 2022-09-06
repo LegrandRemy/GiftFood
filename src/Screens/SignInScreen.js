@@ -18,7 +18,7 @@ import {getAuth, createUserWithEmailAndPassword} from 'firebase/auth';
 import {AuthContext} from '../context/AuthContext';
 import {db} from '../Firebase/Config';
 import auth from '@react-native-firebase/auth';
-import {Firestore} from 'firebase/firestore';
+import {firestore} from '@react-native-firebase/firestore';
 import {useNavigation} from '@react-navigation/native';
 import {collection, doc, setDoc} from 'firebase/firestore';
 import {
@@ -117,43 +117,63 @@ const SignIn = () => {
           password: '',
           verifPassword: '',
         }}
-        onSubmit={values =>
-          auth()
-            .createUserWithEmailAndPassword(
-              values.email.trim(),
-              values.password,
-            )
-            .then(userCredential => {
-              // Signed in
-              const user = userCredential.user;
+        onSubmit={
+          values =>
+            auth()
+              .createUserWithEmailAndPassword(
+                values.email.trim(),
+                values.password,
+              )
+              .then(userCredential => {
+                // Signed in
+                const user = userCredential.user;
 
-              //recuperer le uid du firebase
-              const id = user.uid;
+                //recuperer le uid du firebase
+                const id = user.uid;
+                firestore()
+                  .collection('users')
+                  .doc(id)
+                  .set(...values)
+                  .then(userCredential => {});
+                // retour page de Login
+                setVisible(true);
+                const idTm = setTimeout(() => {
+                  navigation.goBack();
+                }, 2000);
+                setTimeOutId(idTm);
+              })
+              .catch(error => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                console.log('erreur');
 
-              // recuperer la collection users du firebase
-              const userCollRef = collection(db, 'users');
+                // ..
+              })
 
-              const userDoc = doc(userCollRef, id);
-              delete values.password;
-              delete values.verifPassword;
-              //setDoc permet d'ecrire les champs dans le firebase
-              setDoc(userDoc, {
-                ...values,
-              }).then(userCredential => {});
-              // retour page de Login
-              setVisible(true);
-              const idTm = setTimeout(() => {
-                navigation.goBack();
-              }, 2000);
-              setTimeOutId(idTm);
-            })
-            .catch(error => {
-              const errorCode = error.code;
-              const errorMessage = error.message;
-              console.log('erreur');
+          //   // recuperer la collection users du firebase
+          //   const userCollRef = collection(db, 'users');
 
-              // ..
-            })
+          //   const userDoc = doc(userCollRef, id);
+          //   delete values.password;
+          //   delete values.verifPassword;
+          //   //setDoc permet d'ecrire les champs dans le firebase
+          //   setDoc(userDoc, {
+          //     ...values,
+          //   }).then(userCredential => {});
+          //   // retour page de Login
+          //   setVisible(true);
+          //   const idTm = setTimeout(() => {
+          //     navigation.goBack();
+          //   }, 2000);
+          //   setTimeOutId(idTm);
+          // })
+          // .catch(error => {
+          //   const errorCode = error.code;
+          //   const errorMessage = error.message;
+          //   console.log('erreur');
+
+          //   // ..
+          // })
         }
       >
         {({

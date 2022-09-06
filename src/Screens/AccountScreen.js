@@ -25,7 +25,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useContext, useEffect, useState} from 'react';
 import {db, storage} from '../Firebase/Config';
 import auth from '@react-native-firebase/auth';
-import {Firestore} from 'firebase/firestore';
+import firestore from 'firebase/firestore';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {AuthContext} from '../context/AuthContext';
 import {
@@ -169,7 +169,7 @@ export default function Account() {
   //........Upload Cloud Storage...........//
   const uploadAvatar = async img => {
     // on crée une référence pour l'image que le souhaite update avec son nom de stockage
-    const avatarRef = ref(storage, `avatar-${auth.currentUser.uid}.jpg`);
+    const avatarRef = ref(storage, `avatar-${auth().currentUser.uid}.jpg`);
     // On va récupérer dépuis son emplacement via le protocol http
     const request = await fetch(img.uri);
     // On extrait le résultat de l'appel sous forme de blob
@@ -181,7 +181,7 @@ export default function Account() {
         // on met à jour le profil avec le lien de l'image
 
         // 1 . On met à jour l'utilisateur courant dans firestore
-        const q = doc(db, 'users', auth.currentUser.uid);
+        const q = doc(db, 'users', auth().currentUser.uid);
         updateDoc(q, {
           image: downloadUrl,
         });
@@ -218,7 +218,7 @@ export default function Account() {
   });
 
   useEffect(() => {
-    const userDocRef = doc(db, 'users', auth.currentUser.uid);
+    const userDocRef = doc(db, 'users', auth().currentUser.uid);
     const toto = onSnapshot(userDocRef, doc => {
       getDoc(userDocRef).then(docSnap => {
         if (docSnap.exists()) {
@@ -237,7 +237,7 @@ export default function Account() {
   }, []);
 
   const handleUpdate = values => {
-    const userDocRef = doc(db, 'users', auth.currentUser.uid);
+    const userDocRef = doc(db, 'users', auth().currentUser.uid);
     updateDoc(userDocRef, {
       ...values,
       updatedAt: serverTimestamp(),
@@ -344,7 +344,7 @@ export default function Account() {
               }
             ></IconButton>
           </Box>
-          <Text>{auth.currentUser.email}</Text>
+          <Text>{auth().currentUser.email}</Text>
         </Center>
         <VStack p={5} space={2}>
           <FormControl>
