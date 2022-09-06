@@ -13,7 +13,8 @@ const ChoiceScreen = props => {
   const isFocused = useIsFocused();
   const [annonces, setAnnonces] = useState([]);
   const navigation = useNavigation();
-  const items = props.route.params;
+  const items = JSON.parse(props.route.params.values);
+  console.log('items---------', items);
   return (
     <ScrollView style={{flex: 1, backgroundColor: '#a4e6e1'}}>
       <Text
@@ -25,12 +26,12 @@ const ChoiceScreen = props => {
         <Image
           _alt="image de bouffe"
           source={{
-            uri: items.values.image,
+            uri: items.image,
           }}
           style={styles.img}
         />
         <Text style={styles.publie}>
-          publiée le {dayjs(items.values.date).fromNow()}
+          publiée le {dayjs(items.date).fromNow()}
         </Text>
 
         <Card.Content style={styles.CardContent}>
@@ -38,14 +39,13 @@ const ChoiceScreen = props => {
           <Paragraph style={styles.subtitle}>
             Description du produit :
           </Paragraph>
-          <Paragraph>{items.values.description}</Paragraph>
+          <Paragraph>{items.description}</Paragraph>
 
           <Title style={styles.subtitle}>
-            DLC : {dayjs(items.values.DLC).format('DD/MM/YYYY')}
+            DLC : {dayjs(items.DLC).format('DD/MM/YYYY')}
           </Title>
           <Title style={styles.subtitle}>
-            Disponible à partir du{' '}
-            {dayjs(items.values.dispo).format('DD/MM/YYYY')}
+            Disponible à partir du {dayjs(items.dispo).format('DD/MM/YYYY')}
           </Title>
           <Paragraph></Paragraph>
         </Card.Content>
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 5,
     height: 300,
-    width: 350,
+    width: 450,
     resizeMode: 'contain',
   },
   fab: {

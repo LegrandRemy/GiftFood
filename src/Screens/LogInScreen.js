@@ -12,16 +12,11 @@ import {
 import React, {useContext, useEffect, useState} from 'react';
 import {Formik} from 'formik';
 import * as yup from 'yup';
-import {TextInput} from 'react-native-paper';
-import SignInScreen from './SignInScreen';
-import HomeScreen from './HomeScreen';
 import {useNavigation} from '@react-navigation/native';
-
 import {AuthContext} from '../context/AuthContext';
-// import {signInWithEmailAndPassword} from 'firebase/auth';
-// import {auth} from '../Firebase/Config';
 import auth from '@react-native-firebase/auth';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+// NATIVE BASE
 import {
   Box,
   FormControl,
@@ -33,6 +28,9 @@ import {
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import TouchID from 'react-native-touch-id';
 import * as Keychain from 'react-native-keychain';
+// stockage
+import AsyncStorage from '@react-native-async-storage/async-storage';
+// faire disparaitre les warnings
 LogBox.ignoreLogs([
   "AsyncStorage has been extracted from react-native core and will be removed in a future release. It can now be installed and imported from '@react-native-async-storage/async-storage' instead of 'react-native'. See https://github.com/react-native-async-storage/async-storage",
 ]);
@@ -55,7 +53,6 @@ const LogInScreen = () => {
       setUserDetails({});
     }
   };
-
   //.............TOUCHID.............//
   touchIdAuth = () => {
     TouchID.isSupported()

@@ -37,19 +37,19 @@ const DrawerContent = props => {
       setAuthenticated(false);
     });
   };
-  useEffect(() => {
-    const userDocRef = doc(db, 'users', auth().currentUser.uid);
-    const toto = onSnapshot(userDocRef, doc => {
-      getDoc(userDocRef).then(docSnap => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setData(data);
-          setFilePath(filePath);
-        }
-      });
-      return () => toto();
-    });
-  }, []);
+  // useEffect(() => {
+  //   const userDocRef = doc(db, 'users', auth().currentUser.uid);
+  //   const toto = onSnapshot(userDocRef, doc => {
+  //     getDoc(userDocRef).then(docSnap => {
+  //       if (docSnap.exists()) {
+  //         const data = docSnap.data();
+  //         setData(data);
+  //         setFilePath(filePath);
+  //       }
+  //     });
+  //     return () => toto();
+  //   });
+  // }, []);
 
   return (
     <DrawerContentScrollView

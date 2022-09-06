@@ -183,8 +183,8 @@ const styles = StyleSheet.create({
   img: {
     borderRadius: 5,
     height: 150,
-    width: '100%',
-    resizeMode: 'contain',
+    // width: '100%',
+    resizeMode: 'cover',
   },
   ButtonStyle: {
     backgroundColor: 'black',

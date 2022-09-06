@@ -22,10 +22,7 @@ import {AuthContext} from '../context/AuthContext';
 import {SelectItem} from '@ui-kitten/components';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
-import {collection, addDoc} from 'firebase/firestore';
-import {db, storage} from '../Firebase/Config';
 import {DateTimePickerAndroid} from '@react-native-community/datetimepicker';
-import {getAuth, onAuthStateChanged} from 'firebase/auth';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {
   Avatar,
@@ -40,9 +37,9 @@ import {
   WarningOutlineIcon,
 } from 'native-base';
 import IonIcons from 'react-native-vector-icons/Ionicons';
-import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import storage from '@react-native-firebase/storage';
 
 dayjs.locale('fr');
 const validationSchema = yup.object().shape({
@@ -107,9 +104,9 @@ const AjoutProduct = () => {
   };
   const chooseFile = type => {
     let options = {
-      mediaType: type,
-      maxWidth: 300,
-      maxHeight: 550,
+      mediaType: 'photo',
+      maxWidth: 1500,
+      maxHeight: 1500,
       quality: 1,
       includeBase64: true,
     };
@@ -137,8 +134,8 @@ const AjoutProduct = () => {
     console.log('coucou');
     let options = {
       mediaType: type,
-      maxWidth: 300,
-      maxHeight: 550,
+      maxWidth: 1500,
+      maxHeight: 1500,
       quality: 1,
       saveToPhotos: true,
       includeBase64: true,
@@ -169,25 +166,14 @@ const AjoutProduct = () => {
     }
   };
   //.......FIN CAMERA.............//
-  //........Upload Cloud Storage...........//
   const uploadAnnonce = async img => {
-    // on crée une référence pour l'image que le souhaite update avec son nom de stockage
-    const annonceRef = ref(storage, `annonce-${img.fileName}`);
-    // On va récupérer dépuis son emplacement via le protocol http
-    const request = await fetch(img.uri);
-    // On extrait le résultat de l'appel sous forme de blob
-    const response = await request.blob();
-    // on upload l'image récupérer dans le cloud sous forme de blob
-    uploadBytes(annonceRef, response, {contentType: img.type}).then(
-      snapshot => {
-        // on récupère lien de l'image
-        getDownloadURL(snapshot.ref).then(downloadUrl => {
-          setUrl(downloadUrl);
-        });
-      },
+    const annonceRef = storage().ref(`annonce-${img.fileName}`);
+    annonceRef.putFile(img.uri).then(() =>
+      annonceRef.getDownloadURL().then(url => {
+        setUrl(url);
+      }),
     );
   };
-  //........Fin Upload Cloud Storage...........//
 
   const [filePath, setFilePath] = useState({});
   const [imageName, setImageName] = useState({});
@@ -235,18 +221,6 @@ const AjoutProduct = () => {
     <SelectItem key={index} title={title} />
   );
   const [userUid, setUserUid] = useState();
-  const auth = getAuth();
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      // User est Log
-      const uid = user.uid;
-      setUserUid(user.uid);
-      // ...
-    } else {
-      // User is signed out
-      // ...
-    }
-  });
 
   useEffect(() => {
     return () => {
@@ -267,20 +241,20 @@ const AjoutProduct = () => {
     validationSchema: validationSchema,
     onSubmit: values => {
       // Add a new document with a generated id.
-      const docRef = addDoc(collection(db, 'annonces'), {
+      firestore().collection('annonces').add({
         title: values.title,
         description: values.description,
         DLC: values.DLC,
         dispo: values.dispo,
         publicationDate: new Date(),
-        uid: userUid,
+        uid: auth().currentUser.uid,
         image: url,
       });
 
       setVisible(true);
       const idTm = setTimeout(() => {
         navigation.navigate('choice', {
-          values: {...values, image: url, uid: userUid},
+          values: JSON.stringify({...values, image: url, uid: userUid}),
         });
       }, 2000);
       setTimeOutId(idTm);

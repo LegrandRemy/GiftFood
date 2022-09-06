@@ -13,7 +13,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useContext, useEffect, useState} from 'react';
-import {db} from '../Firebase/Config';
 import {AuthContext} from '../context/AuthContext';
 import {
   collection,
@@ -23,17 +22,22 @@ import {
   deleteDoc,
   doc,
 } from 'firebase/firestore';
-import {getAuth, signOut} from 'firebase/auth';
+import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 const UserDashboard = () => {
   const [visible, setVisible] = useState(false);
   const isFocused = useIsFocused();
+
   const deleteDon = id => {
-    const q = doc(db, 'annonces', id);
-    deleteDoc(q).then(deleteAnnonce => {
-      setVisible(true);
-    });
+    firestore()
+      .collection('annonces')
+      .doc(id)
+      .delete()
+      .then(deleteAnnonce => {
+        setVisible(true);
+      });
   };
 
   const renderItem = ({item}) => (
@@ -119,29 +123,29 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(
-      collection(db, 'annonces'),
-      where('uid', '==', auth().currentUser.uid),
-    );
-
-    getDocs(q)
-      .then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-          const annoncesArray = [];
-
+    const user_id = auth().currentUser.uid;
+    const subscriber = firestore()
+      .collection('annonces')
+      .where('uid', '==', user_id)
+      .onSnapshot(
+        querySnapshot => {
+          const advertsArray = [];
           querySnapshot.forEach(doc => {
-            annoncesArray.push({
+            advertsArray.push({
               ...doc.data(),
               id: doc.id,
             });
           });
-          setAnnonces(annoncesArray);
-        });
-      })
-      .catch(e => {
-        console.log(e.message);
-      });
-  }, [isFocused]);
+          setAnnonces(advertsArray);
+          setLoading(false);
+        },
+        error => {
+          console.log(error.massage);
+        },
+      );
+    return () => subscriber();
+  }, []);
+
   return (
     <>
       <View style={{flex: 1, backgroundColor: '#a4e6e1a0'}}>

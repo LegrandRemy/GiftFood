@@ -10,35 +10,15 @@ import {
   PermissionsAndroid,
   Pressable,
 } from 'react-native';
-import {
-  Card,
-  Title,
-  Paragraph,
-  FAB,
-  Portal,
-  Provider,
-} from 'react-native-paper';
 import dayjs from 'dayjs';
 //mettre en francais la date
 import 'dayjs/locale/fr';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useContext, useEffect, useState} from 'react';
-import {db, storage} from '../Firebase/Config';
+import storage from '@react-native-firebase/storage';
 import auth from '@react-native-firebase/auth';
-import firestore from 'firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {AuthContext} from '../context/AuthContext';
-import {
-  collection,
-  query,
-  where,
-  getDoc,
-  serverTimestamp,
-  updateDoc,
-  doc,
-  onSnapshot,
-} from 'firebase/firestore';
-import {getAuth, signOut, updateProfile} from 'firebase/auth';
 import {useFormik} from 'formik';
 import {
   Avatar,
@@ -57,8 +37,7 @@ import {
   IconButton,
 } from 'native-base';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import {base64, isEmpty} from '@firebase/util';
-import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
+import {isEmpty} from '@firebase/util';
 
 export default function Account() {
   //..................CAMERA..................//
@@ -101,7 +80,6 @@ export default function Account() {
       return false;
     } else return true;
   };
-  console.log('FilePath', filePath);
   const chooseFile = type => {
     let options = {
       mediaType: type,
@@ -167,32 +145,43 @@ export default function Account() {
   //.......FIN CAMERA.............//
 
   //........Upload Cloud Storage...........//
-  const uploadAvatar = async img => {
-    // on crée une référence pour l'image que le souhaite update avec son nom de stockage
-    const avatarRef = ref(storage, `avatar-${auth().currentUser.uid}.jpg`);
-    // On va récupérer dépuis son emplacement via le protocol http
-    const request = await fetch(img.uri);
-    // On extrait le résultat de l'appel sous forme de blob
-    const response = await request.blob();
-    // on upload l'image récupérer dans le cloud sous forme de blob
-    uploadBytes(avatarRef, response, {contentType: img.type}).then(snapshot => {
-      // on récupère lien de l'image
-      getDownloadURL(snapshot.ref).then(downloadUrl => {
-        // on met à jour le profil avec le lien de l'image
+  // const uploadAvatar = async img => {
+  //   // on crée une référence pour l'image que le souhaite update avec son nom de stockage
+  //   const avatarRef = ref(storage, `avatar-${auth().currentUser.uid}.jpg`);
+  //   // On va récupérer dépuis son emplacement via le protocol http
+  //   const request = await fetch(img.uri);
+  //   // On extrait le résultat de l'appel sous forme de blob
+  //   const response = await request.blob();
+  //   // on upload l'image récupérer dans le cloud sous forme de blob
+  //   uploadBytes(avatarRef, response, {contentType: img.type}).then(snapshot => {
+  //     // on récupère lien de l'image
+  //     getDownloadURL(snapshot.ref).then(downloadUrl => {
+  //       // on met à jour le profil avec le lien de l'image
 
-        // 1 . On met à jour l'utilisateur courant dans firestore
-        const q = doc(db, 'users', auth().currentUser.uid);
-        updateDoc(q, {
-          image: downloadUrl,
-        });
-        // On met également l'avatar de l'utilisateur dans auth
-        updateProfile(auth().currentUser, {photoURL: downloadUrl});
-        // on ferme la bottonSheet
-        // onClose();
-      });
-    });
-  };
+  //       // 1 . On met à jour l'utilisateur courant dans firestore
+  //       const q = doc(db, 'users', auth().currentUser.uid);
+  //       updateDoc(q, {
+  //         image: downloadUrl,
+  //       });
+  //       // On met également l'avatar de l'utilisateur dans auth
+  //       updateProfile(auth().currentUser, {photoURL: downloadUrl});
+  //       // on ferme la bottonSheet
+  //       // onClose();
+  //     });
+  //   });
+  // };
   //........Fin Upload Cloud Storage...........//
+  const uploadAvatar = async img => {
+    const avatarRef = storage().ref(`avatar-${auth().currentUser.uid}.jpg`);
+    avatarRef.putFile(img.uri).then(() =>
+      avatarRef.getDownloadURL().then(url => {
+        handleUpdate({image: url});
+        auth().currentUser.updateProfile({
+          photoURL: url,
+        });
+      }),
+    );
+  };
 
   const [state, setState] = React.useState({open: false});
 
@@ -218,30 +207,32 @@ export default function Account() {
   });
 
   useEffect(() => {
-    const userDocRef = doc(db, 'users', auth().currentUser.uid);
-    const toto = onSnapshot(userDocRef, doc => {
-      getDoc(userDocRef).then(docSnap => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setInitialValues({
-            username: data['username'],
-            society: data['society'],
-            phone: data['phone'],
-            email: data['email'],
-            image: data['image'],
-          });
-        }
+    const id = auth().currentUser.uid;
+    firestore()
+      .collection('users')
+      .doc(id)
+      .get()
+      .then(docSnap => {
+        const data = docSnap.data();
+        setInitialValues({
+          username: data['username'],
+          society: data['society'],
+          phone: data['phone'],
+          email: data['email'],
+          image: data['image'],
+        });
       });
-      return () => toto();
-    });
   }, []);
 
   const handleUpdate = values => {
-    const userDocRef = doc(db, 'users', auth().currentUser.uid);
-    updateDoc(userDocRef, {
-      ...values,
-      updatedAt: serverTimestamp(),
-    })
+    const id = auth().currentUser.uid;
+    firestore()
+      .collection('users')
+      .doc(id)
+      .update({
+        ...values,
+        updatedAt: firestore.FieldValue.serverTimestamp(),
+      })
       .then(updatedUser => {
         console.log('user updated !');
       })
@@ -259,9 +250,9 @@ export default function Account() {
             size="2xl"
             mb={15}
             source={
-              isEmpty(values.image)
+              isEmpty(auth().currentUser.photoURL)
                 ? require('../../assets/ok.png')
-                : {uri: values.image}
+                : {uri: auth().currentUser.photoURL}
             }
           >
             <Icon color={'white'} name="md-pencil-sharp" as={IonIcons} />

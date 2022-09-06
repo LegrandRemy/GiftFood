@@ -1,22 +1,12 @@
-import {View, Text} from 'react-native';
-import {NativeBaseProvider, extendTheme} from 'native-base';
-import {
-  NavigationContainer,
-  DarkTheme,
-  DefaultTheme,
-} from '@react-navigation/native';
+import {NativeBaseProvider} from 'native-base';
+import {NavigationContainer} from '@react-navigation/native';
 import StackNavigator from './src/Component/StackNavigator';
 import React, {useEffect, useState} from 'react';
 import {db} from './src/Firebase/Config';
-import {
-  ApplicationProvider,
-  BottomNavigationTab,
-  Layout,
-} from '@ui-kitten/components';
+import {ApplicationProvider} from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import {collection, getDocs} from 'firebase/firestore';
 import {AuthContext} from './src/context/AuthContext';
-import {Provider} from 'react-native-paper';
 
 const App = () => {
   const [authenticated, setAuthenticated] = useState(false);
