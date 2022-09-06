@@ -2,7 +2,10 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.giftfood"
 >
-
+<uses-permission
+    android:name="android.permission.POST_NOTIFICATIONS"
+    tools:node="remove"
+  />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -16,6 +19,14 @@
     android:allowBackup="false"
     android:theme="@style/AppTheme"
   >
+  <service
+      android:name=".YourFirebaseMessagingService"
+      android:exported="false"
+    >
+     <intent-filter>
+         <action android:name="com.google.firebase.MESSAGING_EVENT" />
+     </intent-filter>
+ </service>
       <activity
       android:name=".MainActivity"
       android:label="@string/app_name"
