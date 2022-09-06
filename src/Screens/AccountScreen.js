@@ -186,7 +186,7 @@ export default function Account() {
           image: downloadUrl,
         });
         // On met également l'avatar de l'utilisateur dans auth
-        updateProfile(auth.currentUser, {photoURL: downloadUrl});
+        updateProfile(auth().currentUser, {photoURL: downloadUrl});
         // on ferme la bottonSheet
         // onClose();
       });
